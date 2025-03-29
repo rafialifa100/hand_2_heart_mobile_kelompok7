@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'tambahbarang_hapusbarang.dart'; // Import halaman Tambah & Hapus Barang
+import 'riwayat_donasi.dart'; // Import komponen Riwayat Donasi
 
 void main() {
   runApp(const MyApp());
