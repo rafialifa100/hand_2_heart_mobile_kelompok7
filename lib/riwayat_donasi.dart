@@ -6,19 +6,21 @@ class RiwayatDonasi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Contoh data riwayat donasi
+    // Contoh data riwayat donasi (update sesuai struktur di donasibarang.dart)
     final List<Map<String, String>> donationHistory = [
       {
-        'nama': 'Susu Bubuk',
-        'jumlah': '3',
-        'tanggal': '29-03-2025',
-        'pesan': 'Terima kasih atas donasi ini!',
-      },
-      {
-        'nama': 'Beras',
+        'panti': 'Panti Fesnuk (Ngawi)',
+        'barang': 'Kursi Cukur',
         'jumlah': '5',
         'tanggal': '28-03-2025',
         'pesan': 'Semoga berkah!',
+      },
+      {
+        'panti': 'Panti Asuhan Dharma (Bandung)',
+        'barang': 'Alat Cukur',
+        'jumlah': '10',
+        'tanggal': '20-03-2025',
+        'pesan': 'Untuk masa depan lebih cerah!',
       },
     ];
 
@@ -33,12 +35,12 @@ class RiwayatDonasi extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Riwayat Donasi (contoh tampilan sementara)',
+            'Riwayat Donasi (contoh sementara)',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          // Gunakan Flexible untuk menghindari error
-          Flexible(
+          // Gunakan Expanded agar tidak error pada ListView
+          Expanded(
             child: ListView.builder(
               itemCount: donationHistory.length,
               itemBuilder: (context, index) {
@@ -46,7 +48,7 @@ class RiwayatDonasi extends StatelessWidget {
                 return Card(
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
-                    title: Text(history['nama'] ?? ''),
+                    title: Text('${history['barang']} untuk ${history['panti']}'),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
