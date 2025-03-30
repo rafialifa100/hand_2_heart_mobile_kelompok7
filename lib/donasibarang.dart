@@ -61,12 +61,10 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
     ),
   ];
 
-  // Panti asuhan yang dipilih
   Orphanage? _selectedOrphanage;
-  // Barang yang dipilih
   NeededItem? _selectedItem;
-  // Controller untuk jumlah donasi
   final TextEditingController _quantityController = TextEditingController();
+  final TextEditingController _messageController = TextEditingController(); // Controller untuk pesan
 
   /// Validasi dan proses donasi
   void _donate() {
@@ -98,12 +96,13 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
       return;
     }
 
-    // Jika lolos validasi, kurangi jumlah needed
+    // Pesan opsional, tidak wajib diisi
+    final message = _messageController.text.trim();
+
     setState(() {
       _selectedItem!.needed -= quantity;
     });
 
-    // Tampilkan dialog "Donasi Berhasil!"
     _showSuccessDialog();
   }
 
@@ -125,7 +124,6 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Tulisan "Donasi Berhasil!" berwarna hijau
             Text(
               'Donasi Berhasil!',
               style: TextStyle(
@@ -135,7 +133,6 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
               ),
             ),
             const SizedBox(height: 8),
-            // Tulisan "Terimakasih telah berdonasi..."
             const Text(
               'Terimakasih telah berdonasi untuk panti asuhan',
               style: TextStyle(
@@ -148,8 +145,9 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // Tutup dialog
-              _quantityController.clear(); // Kosongkan jumlah
+              Navigator.pop(context);
+              _quantityController.clear();
+              _messageController.clear(); // Kosongkan pesan
             },
             child: const Text('OK'),
           ),
@@ -158,7 +156,6 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
     );
   }
 
-  /// Widget dropdown panti asuhan
   Widget _buildOrphanageDropdown() {
     return DropdownButton<Orphanage>(
       hint: const Text('Pilih Panti Asuhan'),
@@ -173,14 +170,12 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
       onChanged: (value) {
         setState(() {
           _selectedOrphanage = value;
-          // Reset item yang dipilih ketika berganti panti
           _selectedItem = null;
         });
       },
     );
   }
 
-  /// Widget dropdown barang yang dibutuhkan oleh panti terpilih
   Widget _buildItemDropdown() {
     if (_selectedOrphanage == null) {
       return const SizedBox();
@@ -194,8 +189,7 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
       items: neededItems.map((item) {
         return DropdownMenuItem<NeededItem>(
           value: item,
-          child: Text(
-              '${item.name} (Butuh: ${item.needed})'), // Tampilkan sisa kebutuhan
+          child: Text('${item.name} (Butuh: ${item.needed})'),
         );
       }).toList(),
       onChanged: (value) {
@@ -206,7 +200,6 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
     );
   }
 
-  /// Form input jumlah donasi
   Widget _buildQuantityField() {
     return TextField(
       controller: _quantityController,
@@ -218,7 +211,17 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
     );
   }
 
-  /// Tombol Donasi
+  Widget _buildMessageField() {
+    return TextField(
+      controller: _messageController,
+      decoration: const InputDecoration(
+        labelText: 'Pesan untuk Panti Asuhan (Opsional)',
+        border: OutlineInputBorder(),
+      ),
+      keyboardType: TextInputType.text,
+    );
+  }
+
   Widget _buildDonateButton() {
     return ElevatedButton(
       onPressed: _donate,
@@ -231,7 +234,6 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Contoh tampilan sederhana (column)
     return Scaffold(
       appBar: AppBar(
         title: const Text('Permintaan Donasi Panti Asuhan'),
@@ -240,19 +242,16 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Dropdown Panti Asuhan
             _buildOrphanageDropdown(),
             const SizedBox(height: 16),
-            // Dropdown Barang
             _buildItemDropdown(),
             const SizedBox(height: 16),
-            // Input jumlah
             _buildQuantityField(),
             const SizedBox(height: 16),
-            // Tombol Donasi
+            _buildMessageField(),
+            const SizedBox(height: 16),
             _buildDonateButton(),
             const SizedBox(height: 16),
-            // Contoh tampilan sisa kebutuhan item yang dipilih (opsional)
             if (_selectedItem != null)
               Text(
                 'Sisa kebutuhan untuk ${_selectedItem!.name}: ${_selectedItem!.needed}',
