@@ -34,26 +34,27 @@ class RiwayatDonasi extends StatelessWidget {
         children: [
           const Text(
             'Riwayat Donasi (contoh tampilan sementara)',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Expanded(
+          // Gunakan Flexible untuk menghindari error
+          Flexible(
             child: ListView.builder(
               itemCount: donationHistory.length,
               itemBuilder: (context, index) {
                 final history = donationHistory[index];
-                return ListTile(
-                  title: Text(history['nama'] ?? ''),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Jumlah: ${history['jumlah']} buah'),
-                      Text('Tanggal: ${history['tanggal']}'),
-                      Text('Pesan: ${history['pesan']}'),
-                    ],
+                return Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    title: Text(history['nama'] ?? ''),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Jumlah: ${history['jumlah']} buah'),
+                        Text('Tanggal: ${history['tanggal']}'),
+                        Text('Pesan: ${history['pesan']}'),
+                      ],
+                    ),
                   ),
                 );
               },
