@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'tambahbarang_hapusbarang.dart'; // Import halaman Tambah & Hapus Barang
 import 'profile.dart'; // Import profile
 import 'donasibarang.dart'; // Import halaman Donasi ke Panti
+import 'login.dart'; // Import halaman Login
 
 void main() {
   runApp(const MyApp());
 }
 
-/// Aplikasi utama
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -22,9 +22,28 @@ class MyApp extends StatelessWidget {
   }
 }
 
-/// Halaman utama sederhana dengan tombol untuk navigasi ke Tambah & Hapus Barang dan Profil
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool isLoggedIn = false; // Simulasi status login
+
+  void checkLogin(Function onSuccess) {
+    if (isLoggedIn) {
+      onSuccess();
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen(onLoginSuccess: () {
+          setState(() => isLoggedIn = true);
+        })),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,22 +67,24 @@ class HomePage extends StatelessWidget {
             const SizedBox(height: 16), // Jarak antar tombol
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ProfilePage()),
-                );
+                checkLogin(() {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ProfilePage()),
+                  );
+                });
               },
               child: const Text('Lihat Profil'),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const DonationFlowPage(),
-                  ),
-                );
+                checkLogin(() {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const DonationFlowPage()),
+                  );
+                });
               },
               child: const Text('Donasi ke Panti'),
             ),
