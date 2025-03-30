@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'tambahbarang_hapusbarang.dart'; // Import halaman Tambah & Hapus Barang
+import 'donasibarang.dart'; // Import halaman Donasi ke Panti
 
 void main() {
   runApp(const MyApp());
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-/// Halaman utama sederhana dengan tombol untuk navigasi ke Tambah & Hapus Barang
+/// Halaman utama sederhana dengan tombol untuk navigasi ke halaman Tambah & Hapus Barang dan Donasi ke Panti
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -33,16 +34,33 @@ class HomePage extends StatelessWidget {
         title: const Text('Hand2Heart'),
       ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const TambahBarangHapusBarangPage(),
-              ),
-            );
-          },
-          child: const Text('Menu Tambah & Hapus Barang'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const TambahBarangHapusBarangPage(),
+                  ),
+                );
+              },
+              child: const Text('Menu Tambah & Hapus Barang'),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const DonationFlowPage(),
+                  ),
+                );
+              },
+              child: const Text('Donasi ke Panti'),
+            ),
+          ],
         ),
       ),
     );
