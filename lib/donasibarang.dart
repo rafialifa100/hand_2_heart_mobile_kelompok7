@@ -5,10 +5,7 @@ class NeededItem {
   final String name;
   int needed; // jumlah yang masih dibutuhkan
 
-  NeededItem({
-    required this.name,
-    required this.needed,
-  });
+  NeededItem({required this.name, required this.needed});
 }
 
 /// Model data untuk panti asuhan
@@ -26,7 +23,7 @@ class Orphanage {
 
 /// Halaman untuk melakukan donasi
 class DonationFlowPage extends StatefulWidget {
-  const DonationFlowPage({Key? key}) : super(key: key);
+  const DonationFlowPage({super.key});
 
   @override
   State<DonationFlowPage> createState() => _DonationFlowPageState();
@@ -64,7 +61,8 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
   Orphanage? _selectedOrphanage;
   NeededItem? _selectedItem;
   final TextEditingController _quantityController = TextEditingController();
-  final TextEditingController _messageController = TextEditingController(); // Controller untuk pesan
+  final TextEditingController _messageController =
+      TextEditingController(); // Controller untuk pesan
 
   /// Validasi dan proses donasi
   void _donate() {
@@ -92,7 +90,8 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
     // Pastikan jumlah tidak melebihi kebutuhan
     if (quantity > _selectedItem!.needed) {
       _showError(
-          'Jumlah donasi melebihi kebutuhan (${_selectedItem!.needed}).');
+        'Jumlah donasi melebihi kebutuhan (${_selectedItem!.needed}).',
+      );
       return;
     }
 
@@ -109,10 +108,7 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
   /// Menampilkan error menggunakan SnackBar
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
     );
   }
 
@@ -120,39 +116,37 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
   void _showSuccessDialog() {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Donasi Berhasil!',
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.green[700],
-                fontWeight: FontWeight.bold,
-              ),
+      builder:
+          (_) => AlertDialog(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Donasi Berhasil!',
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.green[700],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Terimakasih telah berdonasi untuk panti asuhan',
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            const Text(
-              'Terimakasih telah berdonasi untuk panti asuhan',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.black,
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _quantityController.clear();
+                  _messageController.clear(); // Kosongkan pesan
+                },
+                child: const Text('OK'),
               ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _quantityController.clear();
-              _messageController.clear(); // Kosongkan pesan
-            },
-            child: const Text('OK'),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -161,12 +155,13 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
       hint: const Text('Pilih Panti Asuhan'),
       value: _selectedOrphanage,
       isExpanded: true,
-      items: _orphanages.map((orphanage) {
-        return DropdownMenuItem<Orphanage>(
-          value: orphanage,
-          child: Text('${orphanage.name} (${orphanage.location})'),
-        );
-      }).toList(),
+      items:
+          _orphanages.map((orphanage) {
+            return DropdownMenuItem<Orphanage>(
+              value: orphanage,
+              child: Text('${orphanage.name} (${orphanage.location})'),
+            );
+          }).toList(),
       onChanged: (value) {
         setState(() {
           _selectedOrphanage = value;
@@ -186,12 +181,13 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
       hint: const Text('Pilih Barang'),
       value: _selectedItem,
       isExpanded: true,
-      items: neededItems.map((item) {
-        return DropdownMenuItem<NeededItem>(
-          value: item,
-          child: Text('${item.name} (Butuh: ${item.needed})'),
-        );
-      }).toList(),
+      items:
+          neededItems.map((item) {
+            return DropdownMenuItem<NeededItem>(
+              value: item,
+              child: Text('${item.name} (Butuh: ${item.needed})'),
+            );
+          }).toList(),
       onChanged: (value) {
         setState(() {
           _selectedItem = value;
@@ -235,9 +231,7 @@ class _DonationFlowPageState extends State<DonationFlowPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Permintaan Donasi Panti Asuhan'),
-      ),
+      appBar: AppBar(title: const Text('Permintaan Donasi Panti Asuhan')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
