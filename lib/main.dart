@@ -9,7 +9,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -38,9 +38,14 @@ class _HomePageState extends State<HomePage> {
     } else {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => LoginScreen(onLoginSuccess: () {
-          setState(() => isLoggedIn = true);
-        })),
+        MaterialPageRoute(
+          builder:
+              (context) => LoginScreen(
+                onLoginSuccess: () {
+                  setState(() => isLoggedIn = true);
+                },
+              ),
+        ),
       );
     }
   }
@@ -70,7 +75,9 @@ class _HomePageState extends State<HomePage> {
                 checkLogin(() {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const ProfilePage()),
+                    MaterialPageRoute(
+                      builder: (context) => const ProfilePage(),
+                    ),
                   );
                 });
               },
@@ -82,13 +89,38 @@ class _HomePageState extends State<HomePage> {
                 checkLogin(() {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const DonationFlowPage()),
+                    MaterialPageRoute(
+                      builder: (context) => const DonationFlowPage(),
+                    ),
                   );
                 });
               },
               child: const Text('Donasi ke Panti'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class LoginScreen extends StatelessWidget {
+  final VoidCallback onLoginSuccess;
+
+  const LoginScreen({Key? key, required this.onLoginSuccess}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Login')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // Simulate a successful login
+            onLoginSuccess();
+            Navigator.pop(context);
+          },
+          child: const Text('Login'),
         ),
       ),
     );
