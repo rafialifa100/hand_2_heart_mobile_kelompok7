@@ -8,6 +8,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -20,6 +22,8 @@ class MyApp extends StatelessWidget {
 }
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -39,7 +43,9 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}").hasMatch(email)) {
+    if (!RegExp(
+      r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
+    ).hasMatch(email)) {
       setState(() => _errorMessage = "Format email tidak valid");
       return;
     }
@@ -59,14 +65,16 @@ class _LoginScreenState extends State<LoginScreen> {
       if (response.statusCode == 200) {
         final userData = jsonDecode(response.body);
         final String role = userData['role'];
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Login berhasil sebagai $role"))
-        );
-        
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Login berhasil sebagai $role")));
+
         Navigator.pop(context); // Kembali ke dashboard setelah login
       } else {
-        setState(() => _errorMessage = "Login gagal. Periksa kembali kredensial Anda.");
+        setState(
+          () => _errorMessage = "Login gagal. Periksa kembali kredensial Anda.",
+        );
       }
     } catch (e) {
       setState(() => _errorMessage = "Terjadi kesalahan. Coba lagi nanti.");
@@ -85,9 +93,21 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               Icon(Icons.favorite, size: 80, color: Colors.blue),
               SizedBox(height: 16),
-              Text("Selamat Datang", textAlign: TextAlign.center, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue)),
+              Text(
+                "Selamat Datang",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
               SizedBox(height: 8),
-              Text("Masuk untuk mulai berdonasi", textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: Colors.grey)),
+              Text(
+                "Masuk untuk mulai berdonasi",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
               SizedBox(height: 24),
               TextField(
                 controller: _emailController,
@@ -106,7 +126,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   labelText: "Password",
                   prefixIcon: Icon(Icons.lock),
                   suffixIcon: IconButton(
-                    icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility),
+                    icon: Icon(
+                      _showPassword ? Icons.visibility_off : Icons.visibility,
+                    ),
                     onPressed: () {
                       setState(() => _showPassword = !_showPassword);
                     },
@@ -116,20 +138,29 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               SizedBox(height: 8),
               if (_errorMessage != null)
-                Text(_errorMessage!, style: TextStyle(color: Colors.red), textAlign: TextAlign.center),
+                Text(
+                  _errorMessage!,
+                  style: TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
               SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _login,
                 style: ElevatedButton.styleFrom(
                   padding: EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 child: Text("Masuk", style: TextStyle(fontSize: 16)),
               ),
               SizedBox(height: 16),
               TextButton(
                 onPressed: () {},
-                child: Text("Belum punya akun? Daftar", style: TextStyle(fontSize: 16, color: Colors.blue)),
+                child: Text(
+                  "Belum punya akun? Daftar",
+                  style: TextStyle(fontSize: 16, color: Colors.blue),
+                ),
               ),
             ],
           ),
