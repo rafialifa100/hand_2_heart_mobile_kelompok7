@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'tambahbarang_hapusbarang.dart'; // Import halaman Tambah & Hapus Barang
-import 'profile.dart'; // Import profile
-import 'donasibarang.dart'; // Import halaman Donasi ke Panti
-import 'login.dart'; // Import halaman Login
+import 'login_page.dart';
+import 'register_page.dart';
+import 'homepage.dart';
+import 'donasipage.dart'; 
+import 'profilpage.dart'; 
+import 'adminpage.dart';
+import 'admindonasipage.dart';
+import 'adminpantipage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,115 +18,54 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Hand2Heart',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const HomePage(),
-    );
-  }
-}
-
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  bool isLoggedIn = false; // Simulasi status login
-
-  void checkLogin(Function onSuccess) {
-    if (isLoggedIn) {
-      onSuccess();
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder:
-              (context) => LoginScreen(
-                onLoginSuccess: () {
-                  setState(() => isLoggedIn = true);
-                },
-              ),
-        ),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Hand2Heart')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const TambahBarangHapusBarangPage(),
-                  ),
-                );
-              },
-              child: const Text('Menu Tambah & Hapus Barang'),
-            ),
-            const SizedBox(height: 16), // Jarak antar tombol
-            ElevatedButton(
-              onPressed: () {
-                checkLogin(() {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ProfilePage(),
-                    ),
-                  );
-                });
-              },
-              child: const Text('Lihat Profil'),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                checkLogin(() {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const DonationFlowPage(),
-                    ),
-                  );
-                });
-              },
-              child: const Text('Donasi ke Panti'),
-            ),
+      title: 'Hand2Heart',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+      ),
+      initialRoute: '/home',
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/register': (context) => const RegisterPage(),
+        '/home': (context) => const HomePage(),
+        '/donation': (context) => DonasiBarangPage(),
+        '/admin': (context) => const AdminPage(),
+        '/admin/panti': (context) => const AdminPantiPage(),
+        '/profile': (context) => ProfilePage(
+          isAdmin: false,
+          userProfile: {
+            'username': 'John Doe',
+            'email': 'john@example.com',
+          },
+          donationHistory: [
+            {
+              'type': 'barang',
+              'amount': '1',
+              'item': 'Baju Bekas Layak Pakai',
+              'orphanageName': 'Panti Asuhan Kasih Ibu',
+              'date': '10 Apr 2025',
+            },
+            {
+              'type': 'uang',
+              'amount': '50000',
+              'orphanageName': 'Panti Asuhan Pelita Hati',
+              'date': '08 Apr 2025',
+            }
           ],
         ),
-      ),
-    );
-  }
-}
+      },
+      // Tambahan: agar bisa navigasi ke halaman yang membutuhkan argumen
+      onGenerateRoute: (settings) {
+        if (settings.name == '/admin/donasi') {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder: (context) => AdminDonasiPage(namaPanti: args['namaPanti']),
+          );
+        }
 
-class LoginScreen extends StatelessWidget {
-  final VoidCallback onLoginSuccess;
-
-  const LoginScreen({Key? key, required this.onLoginSuccess}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            // Simulate a successful login
-            onLoginSuccess();
-            Navigator.pop(context);
-          },
-          child: const Text('Login'),
-        ),
-      ),
+        return null; // default fallback jika route tidak ditemukan
+      },
     );
   }
 }
