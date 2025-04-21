@@ -514,7 +514,7 @@ class _DonasiBarangPageState extends State<DonasiBarangPage> with SingleTickerPr
                   ),
                 ),
                 child: const Text(
-                  "Lanjutkan",
+                  "Selesai",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
