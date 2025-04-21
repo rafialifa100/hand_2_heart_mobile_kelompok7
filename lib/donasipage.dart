@@ -12,6 +12,7 @@ class _DonasiBarangPageState extends State<DonasiBarangPage> with SingleTickerPr
   Map<String, dynamic>? selectedOrphanage;
   Map<String, dynamic>? selectedRequest;
   TextEditingController donationAmountController = TextEditingController();
+  TextEditingController donationMessageController = TextEditingController();
   bool showSuccessPopup = false;
   late AnimationController _animationController;
   late Animation<double> _animation;
@@ -35,6 +36,7 @@ class _DonasiBarangPageState extends State<DonasiBarangPage> with SingleTickerPr
   void dispose() {
     _animationController.dispose();
     donationAmountController.dispose();
+    donationMessageController.dispose();
     super.dispose();
   }
 
@@ -206,7 +208,7 @@ class _DonasiBarangPageState extends State<DonasiBarangPage> with SingleTickerPr
   Widget _buildRequestItem(Map<String, dynamic> request) {
     bool isSelected = selectedRequest == request;
     final IconData iconData = request['icon'] ?? Icons.card_giftcard;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -272,9 +274,9 @@ class _DonasiBarangPageState extends State<DonasiBarangPage> with SingleTickerPr
               ),
               isSelected
                   ? const Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                    )
+                Icons.check_circle,
+                color: Colors.green,
+              )
                   : const SizedBox(),
             ],
           ),
@@ -341,6 +343,7 @@ class _DonasiBarangPageState extends State<DonasiBarangPage> with SingleTickerPr
               ),
             ),
           ),
+
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
@@ -467,6 +470,31 @@ class _DonasiBarangPageState extends State<DonasiBarangPage> with SingleTickerPr
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16),
             ),
+
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: donationMessageController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: "Tulis pesan untuk panti asuhan (opsional)",
+                prefixIcon: const Icon(Icons.message, color: Colors.blueGrey),
+                filled: true,
+                fillColor: Colors.grey.shade50,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey.shade300),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.blue.shade400, width: 2),
+                ),
+              ),
+            ),
+
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
@@ -475,6 +503,7 @@ class _DonasiBarangPageState extends State<DonasiBarangPage> with SingleTickerPr
                   setState(() {
                     showSuccessPopup = false;
                     selectedRequest = null;
+                    donationMessageController.clear();
                   });
                 },
                 style: ElevatedButton.styleFrom(
@@ -663,6 +692,7 @@ class _DonasiBarangPageState extends State<DonasiBarangPage> with SingleTickerPr
 
                             // Step 2: Pilih Kebutuhan
                             if (selectedOrphanage != null) ...[
+
                               const SizedBox(height: 24),
                               Container(
                                 margin: const EdgeInsets.only(bottom: 8),
@@ -698,6 +728,7 @@ class _DonasiBarangPageState extends State<DonasiBarangPage> with SingleTickerPr
 
                             // Step 3: Form Donasi
                             if (selectedRequest != null) ...[
+
                               const SizedBox(height: 24),
                               Container(
                                 margin: const EdgeInsets.only(bottom: 16),
@@ -731,7 +762,7 @@ class _DonasiBarangPageState extends State<DonasiBarangPage> with SingleTickerPr
                               _buildSummary(),
                               _buildDonationForm(),
                             ],
-                            
+
                             const SizedBox(height: 100), // Extra space at bottom
                           ],
                         ),
@@ -740,7 +771,7 @@ class _DonasiBarangPageState extends State<DonasiBarangPage> with SingleTickerPr
                   ),
                 ],
               ),
-              
+
               // Popup sukses
               if (showSuccessPopup) _buildSuccessDialog(),
             ],
