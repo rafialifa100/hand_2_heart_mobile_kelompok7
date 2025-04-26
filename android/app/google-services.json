@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "505502783602",
+    "project_id": "hand2heart-88c02",
+    "storage_bucket": "hand2heart-88c02.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505502783602:android:6398346ecf27ed47c70aeb",
+        "android_client_info": {
+          "package_name": "com.example.hand_2_heart_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDWlhSIM1JZIDNX43uDAzygIlkaNbcs6M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
