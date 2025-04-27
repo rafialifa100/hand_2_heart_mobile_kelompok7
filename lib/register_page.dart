@@ -1,6 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -22,6 +22,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   bool _isLoading = false;
   bool _showPassword = false;
   bool _showConfirmPassword = false;
+  String? _selectedRole;
   String? _errorMessage;
   
   late AnimationController _animationController;
@@ -56,40 +57,50 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   }
 
   Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate() && _selectedRole != null) {
       setState(() {
         _isLoading = true;
         _errorMessage = null;
       });
 
-      final body = {
-        "fullName": _fullNameController.text.trim(),
-        "email": _emailController.text.trim(),
-        "phone": _phoneController.text.trim(),
-        "password": _passwordController.text.trim(),
-        "role": "donatur", // Peran otomatis diatur sebagai donatur
-      };
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
 
       try {
-        final response = await http.post(
-          Uri.parse("http://localhost:8080/api/user/register"),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode(body),
+        // Register user using Firebase Authentication
+        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
         );
 
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          Navigator.pushReplacementNamed(context, '/login');
+        // Get the newly created user
+        final User? user = userCredential.user;
+        if (user != null) {
+          // Optionally, save user profile info to Firestore
+          // Firestore.instance.collection('users').doc(user.uid).set({
+          //   'fullName': _fullNameController.text.trim(),
+          //   'phone': _phoneController.text.trim(),
+          //   'role': _selectedRole,
+          // });
+
           ScaffoldMessenger.of(context).showSnackBar(
             _buildCustomSnackBar("Registrasi berhasil. Silakan login."),
           );
-        } else {
-          setState(() => _errorMessage = "Gagal mendaftar. Coba lagi.");
+          Navigator.pushReplacementNamed(context, '/login');
         }
-      } catch (e) {
-        setState(() => _errorMessage = "Terjadi kesalahan. Coba lagi nanti.");
+      } on FirebaseAuthException catch (e) {
+        setState(() {
+          _errorMessage = e.message;
+        });
       } finally {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+        });
       }
+    } else if (_selectedRole == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        _buildCustomSnackBar("Silakan pilih peran Anda terlebih dahulu"),
+      );
     }
   }
 
@@ -229,6 +240,158 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     );
   }
 
+  Widget _buildRoleSelector() {
+    final List<Map<String, dynamic>> roles = [
+      {
+        'label': 'Donatur',
+        'value': 'donatur',
+        'icon': LucideIcons.heartHandshake,
+        'desc': 'Saya ingin berdonasi dan membantu'
+      },
+      {
+        'label': 'PJ Panti',
+        'value': 'pj_panti',
+        'icon': LucideIcons.building,
+        'desc': 'Saya mengelola sebuah panti'
+      },
+    ];
+
+    return FadeTransition(
+      opacity: _animation,
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 24),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.withOpacity(0.1),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  LucideIcons.userCog,
+                  color: Colors.blue.shade600,
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  "Pilih Peran Anda",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _selectedRole != null
+                        ? Colors.green.shade100
+                        : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    _selectedRole != null
+                        ? "Peran Terpilih"
+                        : "Belum Dipilih",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: _selectedRole != null
+                          ? Colors.green.shade700
+                          : Colors.grey.shade700,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Divider(height: 1),
+            const SizedBox(height: 16),
+            Row(
+              children: roles.map((role) {
+                final bool selected = _selectedRole == role['value'];
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selectedRole = role['value'] as String),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            color: selected
+                                ? Colors.blue
+                                : Colors.grey.shade300),
+                        color: selected ? Colors.blue.shade50 : Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: selected
+                            ? [
+                                BoxShadow(
+                                  color: Colors.blue.withOpacity(0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: selected
+                                  ? Colors.blue.withOpacity(0.2)
+                                  : Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              role['icon'] as IconData,
+                              color: selected
+                                  ? Colors.blue
+                                  : Colors.grey,
+                              size: 30,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            role['label'] as String,
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: selected ? Colors.blue : Colors.black),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            role['desc'] as String,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: selected
+                                  ? Colors.blue.shade700
+                                  : Colors.grey.shade600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -246,7 +409,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             child: Column(
               children: [
-                // App Logo and Header
                 FadeTransition(
                   opacity: _animation,
                   child: Column(
@@ -268,29 +430,30 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                         child: const Icon(LucideIcons.heart, color: Colors.white, size: 36),
                       ),
                       const SizedBox(height: 16),
-                      Text("Daftar Akun Baru",
-                          style: TextStyle(
-                            fontSize: 24, 
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade700
-                          )),
+                      Text(
+                        "Daftar Akun Baru",
+                        style: TextStyle(
+                          fontSize: 24, 
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade700
+                        ),
+                      ),
                       const SizedBox(height: 8),
-                      Text("Bergabunglah untuk mulai berdonasi",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade700,
-                          )),
+                      Text(
+                        "Bergabunglah untuk mulai berdonasi",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
                       const SizedBox(height: 32),
                     ],
                   ),
                 ),
-
-                // Registration Form
                 Form(
                   key: _formKey,
                   child: Column(
                     children: [
-                      // Personal Information Section
                       FadeTransition(
                         opacity: _animation,
                         child: Container(
@@ -349,8 +512,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                           ),
                         ),
                       ),
-
-                      // Security Information Section
+                      _buildRoleSelector(),
                       FadeTransition(
                         opacity: _animation,
                         child: Container(
@@ -407,35 +569,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                           ),
                         ),
                       ),
-
-                      // Notification about donatur role
-                      FadeTransition(
-                        opacity: _animation,
-                        child: Container(
-                          width: double.infinity,
-                          margin: const EdgeInsets.only(bottom: 24),
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.blue.shade200),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(LucideIcons.info, color: Colors.blue.shade700, size: 20),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  "Anda akan terdaftar sebagai Donatur di platform kami",
-                                  style: TextStyle(color: Colors.blue.shade700),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      // Error Message
                       if (_errorMessage != null) ...[
                         Container(
                           padding: const EdgeInsets.all(12),
@@ -460,8 +593,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                           ),
                         ),
                       ],
-
-                      // Register Button
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -498,8 +629,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                                 ),
                         ),
                       ),
-
-                      // Login Link
                       const SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -516,8 +645,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                           ),
                         ],
                       ),
-
-                      // Back to Home Link
                       TextButton.icon(
                         onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
                         icon: Icon(Icons.arrow_back, size: 16, color: Colors.grey.shade600),
