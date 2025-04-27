@@ -23,7 +23,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
   late TextEditingController nameController;
   late TextEditingController emailController;
   late TextEditingController phoneController;
-  late TextEditingController addressController;
   late AnimationController _animationController;
   late Animation<double> _animation;
   
@@ -35,7 +34,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     nameController = TextEditingController(text: widget.userProfile['username']);
     emailController = TextEditingController(text: widget.userProfile['email']);
     phoneController = TextEditingController(text: widget.userProfile['phone'] ?? '');
-    addressController = TextEditingController(text: widget.userProfile['address'] ?? '');
     
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -55,7 +53,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     nameController.dispose();
     emailController.dispose();
     phoneController.dispose();
-    addressController.dispose();
     _animationController.dispose();
     super.dispose();
   }
@@ -382,7 +379,6 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             buildProfileField("Nama Lengkap", nameController, LucideIcons.user),
             buildProfileField("Email", emailController, LucideIcons.mail),
             buildProfileField("No. Telepon", phoneController, LucideIcons.phone),
-            buildProfileField("Alamat", addressController, LucideIcons.mapPin),
             const SizedBox(height: 20),
             if (isEditing) ...[
               Padding(

@@ -1,13 +1,15 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'login_page.dart';
-import 'register_page.dart';
-import 'homepage.dart';
-import 'donasipage.dart'; 
-import 'profilpage.dart'; 
-import 'adminpage.dart';
-import 'admindonasipage.dart';
-import 'adminpantipage.dart';
+import 'view/admindonasipage.dart';
+import 'view/register_page.dart';
+import 'view/homepage.dart';
+import 'view/donasipage.dart'; 
+import 'view/profilpage.dart'; 
+import 'view/adminpage.dart';
+import 'view/admindonasipage.dart';
+import 'view/adminpantipage.dart';
+import 'view/login_page.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
