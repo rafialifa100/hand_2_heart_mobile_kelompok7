@@ -5,6 +5,7 @@ import 'homepage.dart';
 import 'donasipage.dart'; 
 import 'profilpage.dart'; 
 import 'login_page.dart';
+import 'donationhistory.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,8 +31,8 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
         '/donation': (context) => DonasiBarangPage(),
-        '/profile': (context) => ProfilePage(
-        ),
+        '/profile': (context) => ProfilePage(),
+        '/history': (context) => DonationHistoryPage(),
       },
     );
   }

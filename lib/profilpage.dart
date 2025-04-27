@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'donationhistory.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -19,7 +20,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
   late Animation<double> _animation;
   
   Map<String, dynamic>? userProfile;
-  List<Map<String, dynamic>>? donationHistory;
+  int donationCount = 0; // Just store the count for the profile page
   bool _isLoading = true;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -49,8 +50,11 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     emailController = TextEditingController(text: '');
     phoneController = TextEditingController(text: '');
     
-    // Get user data and donation history
+    // Get user data and donation count
     getUserData();
+    
+    // For testing purposes, set a sample donation count
+    donationCount = 5;
   }
 
   @override
@@ -99,8 +103,9 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           print('Created basic profile from auth data: $userProfile');
         }
         
-        // Get donation history
-        donationHistory = await getDonationHistory(user.uid);
+        // Get donation count
+        // In real app, you would do something like:
+        // donationCount = await getDonationCount(user.uid);
         
         // Update text controllers
         setState(() {
@@ -145,22 +150,17 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
     }
   }
 
-  Future<List<Map<String, dynamic>>> getDonationHistory(String userId) async {
+  Future<int> getDonationCount(String userId) async {
     try {
       QuerySnapshot donationSnapshot = await FirebaseFirestore.instance
           .collection('donations')
           .where('userId', isEqualTo: userId)
           .get();
       
-      List<Map<String, dynamic>> donations = donationSnapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
-      
-      print('Found ${donations.length} donations for user $userId');
-      return donations;
+      return donationSnapshot.docs.length;
     } catch (e) {
-      print('Error getting donation history: $e');
-      return [];
+      print('Error getting donation count: $e');
+      return 0;
     }
   }
 
@@ -393,7 +393,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                     child: _buildStatCard(
                       LucideIcons.heart,
                       Colors.blue.shade600,
-                      donationHistory?.length.toString() ?? '0',
+                      donationCount.toString(),
                       "Total Donasi",
                     ),
                   ),
@@ -410,6 +410,33 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
               ),
             ),
             const SizedBox(height: 20),
+            // Donation History Button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+              child: ElevatedButton.icon(
+                icon: const Icon(LucideIcons.history),
+                label: const Text("Lihat Riwayat Donasi"),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.blue.shade600,
+                  backgroundColor: Colors.blue.shade50,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Colors.blue.shade200),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  elevation: 0,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(
+                      builder: (context) => const DonationHistoryPage(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 10),
             // Profile Information Fields
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
