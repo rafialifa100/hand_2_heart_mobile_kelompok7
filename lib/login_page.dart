@@ -1,6 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class LoginPage extends StatefulWidget {
@@ -58,26 +57,27 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
       final password = _passwordController.text.trim();
 
       try {
-        final response = await http.post(
-          Uri.parse("http://localhost:8080/api/user/login"),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({"email": email, "password": password}),
+        // Login menggunakan Firebase Authentication
+        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: email,
+          password: password,
         );
 
-        if (response.statusCode == 200) {
-          final userData = jsonDecode(response.body);
-          final String role = userData['role'];
+        final user = userCredential.user;
+        if (user != null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            _buildCustomSnackBar("Login berhasil sebagai $role"),
+            _buildCustomSnackBar("Login berhasil sebagai ${user.email}"),
           );
           Navigator.pushReplacementNamed(context, '/homepage');
-        } else {
-          setState(() => _errorMessage = "Login gagal. Cek kembali kredensial Anda.");
         }
-      } catch (e) {
-        setState(() => _errorMessage = "Terjadi kesalahan. Coba lagi nanti.");
+      } on FirebaseAuthException catch (e) {
+        setState(() {
+          _errorMessage = e.message;
+        });
       } finally {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
@@ -224,7 +224,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
               key: _formKey,
               child: Column(
                 children: [
-                  // App Logo and Header
                   FadeTransition(
                     opacity: _animation,
                     child: Column(
@@ -266,8 +265,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                       ],
                     ),
                   ),
-
-                  // Login Form
+                  
                   FadeTransition(
                     opacity: _animation,
                     child: Container(
@@ -338,7 +336,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                     ),
                   ),
 
-                  // Error Message
                   if (_errorMessage != null) ...[
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -364,7 +361,6 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                     ),
                   ],
 
-                  // Login Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -397,21 +393,20 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                  )
+                                  ),
                                 ),
                               ],
                             ),
                     ),
                   ),
-
-                  // Register Link
+                  
                   const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         "Belum punya akun?",
-                        style: TextStyle(color: Colors.grey.shade700)
+                        style: TextStyle(color: Colors.grey.shade700),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pushNamed(context, '/register'),
@@ -420,19 +415,18 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                           style: TextStyle(
                             color: Colors.blue.shade700,
                             fontWeight: FontWeight.w600,
-                          )
+                          ),
                         ),
                       ),
                     ],
                   ),
 
-                  // Back to Home Link
                   TextButton.icon(
                     onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
                     icon: Icon(Icons.arrow_back, size: 16, color: Colors.grey.shade600),
                     label: Text(
                       "Kembali ke Beranda",
-                      style: TextStyle(color: Colors.grey.shade600)
+                      style: TextStyle(color: Colors.grey.shade600),
                     ),
                   ),
                 ],
