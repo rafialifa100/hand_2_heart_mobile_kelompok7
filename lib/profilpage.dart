@@ -20,40 +20,124 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
   
   Map<String, dynamic>? userProfile;
   List<Map<String, dynamic>>? donationHistory;
+  bool _isLoading = true;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    // Ambil data pengguna dan riwayat donasi
+    
+    // Initialize animation controller and animation
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+    
+    // Start the animation
+    _animationController.forward();
+    
+    // Initialize controllers with empty strings
+    nameController = TextEditingController(text: '');
+    emailController = TextEditingController(text: '');
+    phoneController = TextEditingController(text: '');
+    
+    // Get user data and donation history
     getUserData();
   }
 
+  @override
+  void dispose() {
+    // Dispose controllers to prevent memory leaks
+    nameController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    _animationController.dispose();
+    super.dispose();
+  }
+
   Future<void> getUserData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
     try {
       User? user = FirebaseAuth.instance.currentUser;
       if (user != null) {
+        print('Current user ID: ${user.uid}');
+        print('Current user email: ${user.email}');
+        
+        // First try to get the user profile from Firestore
         userProfile = await getUserProfile(user.uid);
+        
+        // If userProfile is empty or some critical fields are missing,
+        // use data from FirebaseAuth.currentUser as fallback
+        if (userProfile == null || userProfile!.isEmpty || 
+            (userProfile!['email'] == null && user.email != null)) {
+          
+          // Create basic profile from auth data
+          userProfile = {
+            'email': user.email,
+            'username': user.displayName ?? user.email?.split('@')[0],
+            'phone': user.phoneNumber,
+            'photoUrl': user.photoURL,
+          };
+          
+          // Save this basic profile to Firestore
+          await FirebaseFirestore.instance.collection('users').doc(user.uid).set(
+            userProfile!,
+            SetOptions(merge: true),
+          );
+          
+          print('Created basic profile from auth data: $userProfile');
+        }
+        
+        // Get donation history
         donationHistory = await getDonationHistory(user.uid);
+        
+        // Update text controllers
         setState(() {
-          nameController = TextEditingController(text: userProfile?['username'] ?? '');
-          emailController = TextEditingController(text: userProfile?['email'] ?? '');
-          phoneController = TextEditingController(text: userProfile?['phone'] ?? '');
+          nameController.text = userProfile?['username'] ?? '';
+          emailController.text = userProfile?['email'] ?? '';
+          phoneController.text = userProfile?['phone'] ?? '';
+          _isLoading = false;
+        });
+        
+        print('Updated controllers: name=${nameController.text}, email=${emailController.text}');
+      } else {
+        print('No user is currently signed in');
+        setState(() {
+          _isLoading = false;
         });
       }
     } catch (e) {
-      showCustomSnackBar('Gagal mengambil data pengguna');
+      print('Error in getUserData: $e');
+      showCustomSnackBar('Gagal mengambil data pengguna: $e');
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   Future<Map<String, dynamic>> getUserProfile(String userId) async {
     try {
+      print('Fetching user profile for ID: $userId');
       DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+      
       if (userDoc.exists) {
-        return userDoc.data() as Map<String, dynamic>;
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+        print('User document found: $userData');
+        return userData;
       } else {
-        throw 'User not found';
+        print('User document not found in Firestore');
+        return {};
       }
     } catch (e) {
       print('Error getting user profile: $e');
@@ -68,7 +152,12 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           .where('userId', isEqualTo: userId)
           .get();
       
-      return donationSnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+      List<Map<String, dynamic>> donations = donationSnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
+      
+      print('Found ${donations.length} donations for user $userId');
+      return donations;
     } catch (e) {
       print('Error getting donation history: $e');
       return [];
@@ -77,10 +166,45 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
 
   void toggleEdit() {
     if (isEditing) {
-      // Simpan perubahan (di implementasi sebenarnya, Anda akan menyimpan ke database)
-      showCustomSnackBar("Profil berhasil diperbarui");
+      // Save changes
+      saveUserData();
     }
     setState(() => isEditing = !isEditing);
+  }
+
+  Future<void> saveUserData() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Update display name in Firebase Auth if it has changed
+        if (user.displayName != nameController.text && nameController.text.isNotEmpty) {
+          await user.updateDisplayName(nameController.text);
+        }
+        
+        // Update user profile in Firestore
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+          'username': nameController.text,
+          'email': emailController.text,
+          'phone': phoneController.text,
+          'lastUpdated': FieldValue.serverTimestamp(),
+        });
+        
+        // Update local state
+        setState(() {
+          userProfile = {
+            ...userProfile!,
+            'username': nameController.text,
+            'email': emailController.text,
+            'phone': phoneController.text,
+          };
+        });
+        
+        showCustomSnackBar("Profil berhasil diperbarui");
+      }
+    } catch (e) {
+      print('Error saving user data: $e');
+      showCustomSnackBar("Gagal memperbarui profil: $e");
+    }
   }
 
   void showCustomSnackBar(String message) {
@@ -226,7 +350,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                       size: 16,
                     ),
                     onPressed: () {
-                      // Implementasi untuk mengubah foto profil
+                      // Implementation for changing profile photo
                       showCustomSnackBar("Fitur ganti foto profil akan segera hadir");
                     },
                   ),
@@ -278,7 +402,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                     child: _buildStatCard(
                       LucideIcons.calendarDays,
                       Colors.green.shade600,
-                      "5",  // Hardcoded for now. In reality, you would calculate this.
+                      userProfile?['pantiBantuan']?.toString() ?? "0",
                       "Panti Terbantu",
                     ),
                   ),
@@ -286,6 +410,57 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
               ),
             ),
             const SizedBox(height: 20),
+            // Profile Information Fields
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 24, top: 12, bottom: 8),
+                  child: Text(
+                    "Informasi Profil",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey.shade800,
+                    ),
+                  ),
+                ),
+                buildProfileField("Nama", nameController, LucideIcons.user),
+                buildProfileField("Email", emailController, LucideIcons.mail),
+                buildProfileField("Nomor Telepon", phoneController, LucideIcons.phone),
+              ],
+            ),
+            const SizedBox(height: 20),
+            // Logout button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: ElevatedButton(
+                onPressed: () async {
+                  try {
+                    await FirebaseAuth.instance.signOut();
+                    Navigator.of(context).pushReplacementNamed('/login'); // Navigate to login page
+                  } catch (e) {
+                    showCustomSnackBar("Gagal keluar dari akun: $e");
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade600,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  minimumSize: const Size(double.infinity, 50),
+                ),
+                child: const Text(
+                  "Keluar",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -313,7 +488,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           const SizedBox(height: 8),
           Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
@@ -336,8 +511,23 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      body: userProfile == null
-          ? Center(child: CircularProgressIndicator()) // Tampilkan loading jika data belum tersedia
+      body: _isLoading
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Memuat data profil...",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            )
           : Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -435,6 +625,17 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             buildProfileSection(),
+                            // Add a refresh button for debugging
+                            Center(
+                              child: TextButton.icon(
+                                icon: const Icon(Icons.refresh),
+                                label: const Text("Refresh Data"),
+                                onPressed: () {
+                                  getUserData();
+                                  showCustomSnackBar("Menyegarkan data...");
+                                },
+                              ),
+                            ),
                           ],
                         ),
                       ),

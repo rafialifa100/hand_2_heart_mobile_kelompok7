@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -55,47 +56,56 @@ class _RegisterPageState extends State<RegisterPage>
     super.dispose();
   }
 
-  Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = null;
-      });
+Future<void> _submitForm() async {
+  if (_formKey.currentState!.validate()) {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-      final email = _emailController.text.trim();
-      final password = _passwordController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
-      try {
-        // Register user using Firebase Authentication
-        UserCredential userCredential = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(email: email, password: password);
+    try {
+      // Register user using Firebase Authentication
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
 
-        // Get the newly created user
-        final User? user = userCredential.user;
-        if (user != null) {
-          // Optionally, save user profile info to Firestore
-          // Firestore.instance.collection('users').doc(user.uid).set({
-          //   'fullName': _fullNameController.text.trim(),
-          //   'phone': _phoneController.text.trim(),
-          //   'role': 'donatur', // Always set role as donatur
-          // });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            _buildCustomSnackBar("Registrasi berhasil. Silakan login."),
-          );
-          Navigator.pushReplacementNamed(context, '/login');
-        }
-      } on FirebaseAuthException catch (e) {
-        setState(() {
-          _errorMessage = e.message;
+      // Get the newly created user
+      final User? user = userCredential.user;
+      if (user != null) {
+        // Save user profile info to Firestore - THIS IS THE IMPORTANT PART
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'username': _fullNameController.text.trim(),  // Using 'username' to match ProfilePage
+          'email': email,
+          'phone': _phoneController.text.trim(),
+          'role': 'donatur', // Always set role as donatur
+          'createdAt': FieldValue.serverTimestamp(),
         });
-      } finally {
-        setState(() {
-          _isLoading = false;
-        });
+        
+        // Optionally update the displayName in Firebase Auth too
+        await user.updateProfile(displayName: _fullNameController.text.trim());
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          _buildCustomSnackBar("Registrasi berhasil. Silakan login."),
+        );
+        Navigator.pushReplacementNamed(context, '/login');
       }
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _errorMessage = e.message;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Terjadi kesalahan: $e";
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
+}
 
   SnackBar _buildCustomSnackBar(String message) {
     return SnackBar(
