@@ -3,13 +3,11 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'donasipage.dart';
 
 class ProfilePage extends StatefulWidget {
-  final bool isAdmin;
   final Map<String, dynamic> userProfile;
   final List<Map<String, dynamic>> donationHistory;
 
   const ProfilePage({
     super.key,
-    required this.isAdmin,
     required this.userProfile,
     required this.donationHistory,
   });
@@ -176,32 +174,30 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
             ),
             const SizedBox(height: 24),
             // Stats Section
-            if (!widget.isAdmin) ...[
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                 /*   Expanded(
-                      child: _buildStatCard(
-
-                        Colors.blue.shade600,
-                        widget.donationHistory.length.toString(),
-                        "Total Donasi",
-                      ),
-                    ), */
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildStatCard(
-                        LucideIcons.calendarDays,
-                        Colors.green.shade600,
-                        "5",  // Hardcoded for now. In reality, you would calculate this.
-                        "Panti Terbantu",
-                      ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildStatCard(
+                      LucideIcons.heart,
+                      Colors.blue.shade600,
+                      widget.donationHistory.length.toString(),
+                      "Total Donasi",
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildStatCard(
+                      LucideIcons.calendarDays,
+                      Colors.green.shade600,
+                      "5",  // Hardcoded for now. In reality, you would calculate this.
+                      "Panti Terbantu",
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
             const SizedBox(height: 20),
           ],
         ),
@@ -842,7 +838,7 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
                     children: [
                       buildProfileSection(),
                       buildPersonalInformationSection(),
-                      if (!widget.isAdmin) buildDonationHistorySection(),
+                      buildDonationHistorySection(),
                       const SizedBox(height: 30),
                     ],
                   ),
@@ -852,19 +848,17 @@ class _ProfilePageState extends State<ProfilePage> with SingleTickerProviderStat
           ),
         ),
       ),
-      floatingActionButton: !widget.isAdmin
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DonasiBarangPage()),
-                );
-              },
-              backgroundColor: Colors.blue.shade600,
-              icon: const Icon(LucideIcons.heart),
-              label: const Text("Donasi"),
-            )
-          : null,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const DonasiBarangPage()),
+          );
+        },
+        backgroundColor: Colors.blue.shade600,
+        icon: const Icon(LucideIcons.heart),
+        label: const Text("Donasi"),
+      ),
     );
   }
 }

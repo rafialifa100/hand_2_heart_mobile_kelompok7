@@ -1,15 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'view/admindonasipage.dart';
 import 'view/register_page.dart';
 import 'view/homepage.dart';
 import 'view/donasipage.dart'; 
 import 'view/profilpage.dart'; 
-import 'view/adminpage.dart';
-import 'view/admindonasipage.dart';
-import 'view/adminpantipage.dart';
 import 'view/login_page.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,10 +30,7 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
         '/donation': (context) => DonasiBarangPage(),
-        '/admin': (context) => const AdminPage(),
-        '/admin/panti': (context) => const AdminPantiPage(),
         '/profile': (context) => ProfilePage(
-          isAdmin: false,
           userProfile: {
             'username': 'John Doe',
             'email': 'john@example.com',
@@ -61,17 +53,6 @@ class MyApp extends StatelessWidget {
             }
           ],
         ),
-      },
-      // Tambahan: agar bisa navigasi ke halaman yang membutuhkan argumen
-      onGenerateRoute: (settings) {
-        if (settings.name == '/admin/donasi') {
-          final args = settings.arguments as Map<String, dynamic>;
-          return MaterialPageRoute(
-            builder: (context) => AdminDonasiPage(namaPanti: args['namaPanti']),
-          );
-        }
-
-        return null; // default fallback jika route tidak ditemukan
       },
     );
   }
