@@ -31,27 +31,6 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomePage(),
         '/donation': (context) => DonasiBarangPage(),
         '/profile': (context) => ProfilePage(
-          userProfile: {
-            'username': 'John Doe',
-            'email': 'john@example.com',
-          },
-          donationHistory: [
-            {
-              'type': 'barang',
-              'amount': '1',
-              'item': 'Baju Bekas Layak Pakai',
-              'orphanageName': 'Panti Asuhan Kasih Ibu',
-              'date': '10 Apr 2025',
-              'message': 'Semoga berkah',
-            },
-            {
-              'type': 'uang',
-              'amount': '50000',
-              'orphanageName': 'Panti Asuhan Pelita Hati',
-              'date': '08 Apr 2025',
-              'message': 'Semoga amanah'
-            }
-          ],
         ),
       },
     );

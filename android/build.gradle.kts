@@ -19,3 +19,10 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+android {
+    compileSdkVersion 33  // Versi SDK yang digunakan (sesuaikan dengan versi SDK yang kamu gunakan)
+    defaultConfig {
+        // Konfigurasi lainnya
+    }
+    ndkVersion = "27.0.12077973"  // Menambahkan versi NDK yang sesuai
+}
