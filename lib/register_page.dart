@@ -22,7 +22,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   bool _isLoading = false;
   bool _showPassword = false;
   bool _showConfirmPassword = false;
-  String? _selectedRole;
   String? _errorMessage;
   
   late AnimationController _animationController;
@@ -57,7 +56,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
   }
 
   Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate() && _selectedRole != null) {
+    if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
         _errorMessage = null;
@@ -80,7 +79,7 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           // Firestore.instance.collection('users').doc(user.uid).set({
           //   'fullName': _fullNameController.text.trim(),
           //   'phone': _phoneController.text.trim(),
-          //   'role': _selectedRole,
+          //   'role': 'donatur', // Always set role as donatur
           // });
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -97,10 +96,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
           _isLoading = false;
         });
       }
-    } else if (_selectedRole == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        _buildCustomSnackBar("Silakan pilih peran Anda terlebih dahulu"),
-      );
     }
   }
 
@@ -240,158 +235,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildRoleSelector() {
-    final List<Map<String, dynamic>> roles = [
-      {
-        'label': 'Donatur',
-        'value': 'donatur',
-        'icon': LucideIcons.heartHandshake,
-        'desc': 'Saya ingin berdonasi dan membantu'
-      },
-      {
-        'label': 'PJ Panti',
-        'value': 'pj_panti',
-        'icon': LucideIcons.building,
-        'desc': 'Saya mengelola sebuah panti'
-      },
-    ];
-
-    return FadeTransition(
-      opacity: _animation,
-      child: Container(
-        width: double.infinity,
-        margin: const EdgeInsets.only(bottom: 24),
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.blue.withOpacity(0.1),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  LucideIcons.userCog,
-                  color: Colors.blue.shade600,
-                ),
-                const SizedBox(width: 10),
-                const Text(
-                  "Pilih Peran Anda",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _selectedRole != null
-                        ? Colors.green.shade100
-                        : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    _selectedRole != null
-                        ? "Peran Terpilih"
-                        : "Belum Dipilih",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: _selectedRole != null
-                          ? Colors.green.shade700
-                          : Colors.grey.shade700,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Divider(height: 1),
-            const SizedBox(height: 16),
-            Row(
-              children: roles.map((role) {
-                final bool selected = _selectedRole == role['value'];
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selectedRole = role['value'] as String),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                            color: selected
-                                ? Colors.blue
-                                : Colors.grey.shade300),
-                        color: selected ? Colors.blue.shade50 : Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: selected
-                            ? [
-                                BoxShadow(
-                                  color: Colors.blue.withOpacity(0.2),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Column(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: selected
-                                  ? Colors.blue.withOpacity(0.2)
-                                  : Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              role['icon'] as IconData,
-                              color: selected
-                                  ? Colors.blue
-                                  : Colors.grey,
-                              size: 30,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            role['label'] as String,
-                            style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: selected ? Colors.blue : Colors.black),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            role['desc'] as String,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: selected
-                                  ? Colors.blue.shade700
-                                  : Colors.grey.shade600,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -512,7 +355,6 @@ class _RegisterPageState extends State<RegisterPage> with SingleTickerProviderSt
                           ),
                         ),
                       ),
-                      _buildRoleSelector(),
                       FadeTransition(
                         opacity: _animation,
                         child: Container(

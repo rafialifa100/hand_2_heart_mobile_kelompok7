@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
           ScaffoldMessenger.of(context).showSnackBar(
             _buildCustomSnackBar("Login berhasil sebagai ${user.email}"),
           );
-          Navigator.pushReplacementNamed(context, '/homepage');
+          Navigator.pushReplacementNamed(context, '/donation');
         }
       } on FirebaseAuthException catch (e) {
         setState(() {
